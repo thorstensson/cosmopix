@@ -1,133 +1,11 @@
-<template>
-  <div class="slideshow-container fixed inset-0 w-screen h-screen overflow-hidden bg-black">
-    <!-- COSMOPIX Header -->
-    <div class="absolute top-0 left-0 z-40 p-6 sm:p-8">
-      <h1
-        class="text-white font-display font-bold tracking-wider text-xl sm:text-2xl md:text-3xl lg:text-4xl"
-      >
-        COSMOPIX
-      </h1>
-    </div>
-
-    <!-- Centered container for image area and navigation -->
-    <div class="absolute inset-0 flex items-center justify-center z-10">
-      <div class="relative w-full max-w-[800px] h-full max-h-[800px]">
-        <!-- WebGL Canvas -->
-        <div id="canvas" class="absolute inset-0 w-full h-full"></div>
-
-        <!-- Texture Definition -->
-        <div class="multi-textures absolute inset-0 w-full h-full pointer-events-none opacity-0">
-          <!-- Displacement texture (uses first image) -->
-          <img
-            v-if="imageUrls.length > 0"
-            :src="imageUrls[0]"
-            data-sampler="displacement"
-            crossorigin="anonymous"
-          />
-
-          <!-- Only 2 additional image slots for active and next textures -->
-          <img crossorigin="anonymous" />
-          <img crossorigin="anonymous" />
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="slideshow-navigation absolute inset-0">
-          <!-- Previous Button -->
-          <button
-            @click="prevSlide"
-            :disabled="imageUrls.length <= 1 || isChanging"
-            class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 text-white"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              fill="none"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-
-          <!-- Next Button -->
-          <button
-            @click="nextSlide"
-            :disabled="imageUrls.length <= 1 || isChanging"
-            class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 text-white"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              fill="none"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Slide Counter and Metadata (outside centered container) -->
-    <div class="fixed inset-0 pointer-events-none z-30">
-      <!-- Slide Counter -->
-      <div
-        class="absolute bottom-8 right-8 text-white bg-black/30 backdrop-blur-sm px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm"
-      >
-        {{ currentSlideIndex + 1 }} / {{ imageUrls.length }}
-      </div>
-
-      <!-- Metadata Display -->
-      <div
-        v-if="currentMetadata"
-        class="absolute bottom-8 left-8 max-w-xs text-white bg-black/30 backdrop-blur-sm p-3 sm:p-4 rounded-lg sm:max-w-sm md:max-w-md font-sans"
-      >
-        <h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2 truncate">
-          {{ currentMetadata.title }}
-        </h3>
-        <div class="text-xs sm:text-sm space-y-1">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-            <span class="text-gray-300">Date:</span>
-            <span>{{ formatDate(currentMetadata.date) }}</span>
-          </div>
-          <div
-            v-if="currentMetadata.copyright"
-            class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
-          >
-            <span class="text-gray-300">Copyright:</span>
-            <span class="truncate">{{ currentMetadata.copyright }}</span>
-          </div>
-          <div class="mt-2">
-            <p class="text-gray-300 text-xs mb-1">Explanation:</p>
-            <p class="text-xs sm:text-sm line-clamp-2 md:line-clamp-3">
-              {{ currentMetadata.explanation }}
-            </p>
-          </div>
-          <div class="mt-1 sm:mt-2 text-xs text-gray-400">
-            Media type: {{ currentMetadata.media_type }} • Service version:
-            {{ currentMetadata.service_version }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
   import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
   import { Curtains, Plane } from 'curtainsjs'
   import { type ApodItem } from '@/api/nasaService'
+
+  const emit = defineEmits<{
+    ready: []
+  }>()
 
   interface Props {
     apodItems: ApodItem[]
@@ -143,8 +21,8 @@
   const multiTexturesPlane = ref<Plane | null>(null)
   const currentSlideIndex = ref(0)
   const isChanging = ref(false)
-  const activeTexture = ref<any | null>(null)
-  const nextTexture = ref<any | null>(null)
+  const activeTexture = ref<Plane['textures'][0] | null>(null)
+  const nextTexture = ref<Plane['textures'][0] | null>(null)
 
   const slideshowState = ref({
     activeTextureIndex: 1,
@@ -172,14 +50,6 @@
         return `/apod-images${url.replace('https://apod.nasa.gov', '')}`
       }
       return url
-    })
-
-    console.log('NASA Slideshow - Image URLs:', {
-      totalItems: props.apodItems.length,
-      imageItems: imageItems.value.length,
-      urls: urls,
-      sampleUrl: urls[0],
-      fileTypes: urls.map((url) => url.split('.').pop())
     })
 
     return urls
@@ -272,8 +142,6 @@ void main() {
 
   const initSlideshow = () => {
     try {
-      console.log('initSlideshow called, imageUrls:', imageUrls.value)
-
       if (curtains.value) {
         curtains.value.dispose()
         curtains.value = null
@@ -283,7 +151,7 @@ void main() {
       if (!canvasContainer) return
 
       curtains.value = new Curtains({
-        container: canvasContainer,
+        container: 'canvas',
         watchScroll: false,
         pixelRatio: Math.min(1.5, window.devicePixelRatio)
       })
@@ -316,15 +184,11 @@ void main() {
       multiTexturesPlane.value = new Plane(curtains.value, planeElement, params)
       slideshowState.value.maxTextures = imageUrls.value.length
 
-      console.log('Plane created, maxTextures:', slideshowState.value.maxTextures)
-
       multiTexturesPlane.value
-        .onLoading((texture: any) => {
-          console.log('Texture loading:', texture)
+        .onLoading((texture) => {
           texture.setMinFilter(curtains.value!.gl.LINEAR_MIPMAP_NEAREST)
         })
         .onReady(() => {
-          console.log('Plane ready, creating textures')
           const plane = multiTexturesPlane.value!
           const activeTex = plane.createTexture({
             sampler: 'activeTex',
@@ -341,17 +205,18 @@ void main() {
           nextTexture.value = nextTex
 
           // Load initial images if available
-          if (imageUrls.value.length > 0) {
+          if (imageUrls.value.length > 0 && imageUrls.value[0]) {
             const activeImg = new Image()
             activeImg.crossOrigin = 'anonymous'
             activeImg.src = imageUrls.value[0]
             activeImg.onload = () => {
               activeTex.setSource(activeImg)
               console.log('Initial active image loaded')
+              emit('ready')
             }
           }
 
-          if (imageUrls.value.length > 1) {
+          if (imageUrls.value.length > 1 && imageUrls.value[1]) {
             const nextImg = new Image()
             nextImg.crossOrigin = 'anonymous'
             nextImg.src = imageUrls.value[1]
@@ -403,16 +268,14 @@ void main() {
 
     if (!nextTexture.value || !imageUrls.value[nextImageIndex]) return
 
-    console.log('Starting transition to image:', nextImageIndex, imageUrls.value[nextImageIndex])
-
     // Preload the next image before starting transition
     const nextImg = new Image()
     nextImg.crossOrigin = 'anonymous'
-    nextImg.src = imageUrls.value[nextImageIndex]
+    const nextImageUrl = imageUrls.value[nextImageIndex]
+    if (!nextImageUrl) return
+    nextImg.src = nextImageUrl
 
     nextImg.onload = () => {
-      console.log('Next image preloaded successfully, starting transition')
-
       // Update the next texture with the preloaded image
       nextTexture.value!.setSource(nextImg)
 
@@ -421,7 +284,7 @@ void main() {
       currentSlideIndex.value = nextImageIndex
 
       // Start the transition animation
-      curtains.value.enableDrawing()
+      curtains.value?.enableDrawing()
       slideshowState.value.isChanging = true
       isChanging.value = true
       slideshowState.value.transitionTimer = 0
@@ -435,11 +298,13 @@ void main() {
         isChanging.value = false
 
         // Swap textures: current becomes next, next becomes current
-        if (activeTexture.value) {
+        if (activeTexture.value && imageUrls.value[nextImageIndex]) {
           // Update active texture with the image that was just shown in nextTex
           const activeImg = new Image()
           activeImg.crossOrigin = 'anonymous'
-          activeImg.src = imageUrls.value[nextImageIndex]
+          const activeImageUrl = imageUrls.value[nextImageIndex]
+          if (!activeImageUrl) return
+          activeImg.src = activeImageUrl
           activeImg.onload = () => {
             activeTexture.value!.setSource(activeImg)
           }
@@ -457,7 +322,6 @@ void main() {
   }
 
   const nextSlide = () => {
-    console.log('NEXT')
     startTransition('next')
   }
 
@@ -504,3 +368,123 @@ void main() {
     }
   })
 </script>
+
+<template>
+  <div class="slideshow-container fixed inset-0 w-screen h-screen overflow-hidden bg-black">
+    <!-- COSMOPIX Header -->
+    <div class="absolute top-0 left-0 z-40 p-6 sm:p-8">
+      <h1
+        class="text-white font-display font-bold tracking-wider text-xl sm:text-2xl md:text-3xl lg:text-4xl"
+      >
+        COSMOPIX
+      </h1>
+    </div>
+
+    <!-- Centered container for image area and navigation -->
+    <div class="absolute inset-0 flex items-center justify-center z-10">
+      <div class="relative w-full max-w-200 h-full max-h-200">
+        <!-- WebGL Canvas -->
+        <div id="canvas" class="absolute inset-0 w-full h-full"></div>
+
+        <!-- Texture Definition -->
+        <div class="multi-textures absolute inset-0 w-full h-full pointer-events-none opacity-0">
+          <!-- Displacement texture removed for page curl effect -->
+
+          <!-- Only 2 image slots for active and next textures -->
+          <img crossorigin="anonymous" />
+          <img crossorigin="anonymous" />
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="slideshow-navigation absolute inset-0">
+          <!-- Previous Button -->
+          <button
+            @click="prevSlide"
+            :disabled="imageUrls.length <= 1 || isChanging"
+            class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 transition-all duration-300 disabled:opacity-30 disabled:cursor-default"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-8 w-8 text-white"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              fill="none"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <!-- Next Button -->
+          <button
+            @click="nextSlide"
+            :disabled="imageUrls.length <= 1 || isChanging"
+            class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 transition-all duration-300 disabled:opacity-30 disabled:cursor-default"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-8 w-8 text-white"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              fill="none"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide Counter and Metadata (outside centered container) -->
+    <div class="fixed inset-0 pointer-events-none z-30">
+      <!-- Slide Counter -->
+      <div
+        class="absolute bottom-8 right-8 text-white bg-black/30 backdrop-blur-sm px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm"
+      >
+        {{ currentSlideIndex + 1 }} / {{ imageUrls.length }}
+      </div>
+
+      <!-- Metadata Display -->
+      <div
+        v-if="currentMetadata"
+        class="absolute bottom-8 left-8 max-w-xs text-white bg-black/30 backdrop-blur-sm p-3 sm:p-4 rounded-lg sm:max-w-sm md:max-w-md font-sans"
+      >
+        <h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2 truncate">
+          {{ currentMetadata.title }}
+        </h3>
+        <div class="text-xs sm:text-sm space-y-1">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span class="text-gray-300">Date:</span>
+            <span>{{ formatDate(currentMetadata.date) }}</span>
+          </div>
+          <div
+            v-if="currentMetadata.copyright"
+            class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
+          >
+            <span class="text-gray-300">Copyright:</span>
+            <span class="truncate">{{ currentMetadata.copyright }}</span>
+          </div>
+          <div class="mt-2">
+            <p class="text-gray-300 text-xs mb-1">Explanation:</p>
+            <p class="text-xs sm:text-sm line-clamp-2 md:line-clamp-3">
+              {{ currentMetadata.explanation }}
+            </p>
+          </div>
+          <div class="mt-1 sm:mt-2 text-xs text-gray-400">
+            Media type: {{ currentMetadata.media_type }} • Service version:
+            {{ currentMetadata.service_version }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
