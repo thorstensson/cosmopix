@@ -32,17 +32,9 @@
 
   onMounted(async () => {
     try {
-      console.log('Loading gallery with 36 images...')
       await loadGallery(36)
       apiLoaded.value = true
       checkIfShouldHideLoader()
-
-      console.log('Gallery loaded:', {
-        totalItems: gallery.value.length,
-        filteredItems: filteredItems.value.length,
-        sampleItem: filteredItems.value[0],
-        hasImages: filteredItems.value.length > 0
-      })
     } catch (err) {
       console.error('Error loading gallery:', err)
       apiLoaded.value = true

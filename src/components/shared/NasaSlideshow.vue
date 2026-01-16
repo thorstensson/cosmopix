@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+  import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
   import { Curtains, Plane, type Texture } from 'curtainsjs'
   import { type ApodItem } from '@/api/nasaService'
-
+  const isInitialized = ref(false)
   const emit = defineEmits<{
     ready: []
   }>()
@@ -76,6 +76,10 @@
     }
   }
 
+  /**
+   * Shaders from Curtains.js example
+   * @https://www.curtainsjs.com/examples/multiple-textures/index.html
+   */
   const vertexShader = `
   precision mediump float;
 
@@ -141,6 +145,8 @@ void main() {
 `
 
   const initSlideshow = () => {
+    if (isInitialized.value) return // Stop if already running
+    isInitialized.value = true
     try {
       if (curtains.value) {
         curtains.value.dispose()
@@ -216,8 +222,10 @@ void main() {
               activeImg
                 .decode()
                 .then(() => {
-                  activeTex.setSource(activeImg)
-                  emit('ready')
+                  if (activeTex) {
+                    activeTex.setSource(activeImg)
+                    emit('ready')
+                  }
                 })
                 .catch(() => {
                   // Fallback if decode fails
@@ -233,14 +241,8 @@ void main() {
             nextImg.src = imageUrls.value[1]
             nextImg.onload = () => {
               nextTex.setSource(nextImg)
-              console.log('Initial next image loaded')
             }
           }
-
-          console.log(
-            'Textures created, activeTextureIndex:',
-            slideshowState.value.activeTextureIndex
-          )
         })
         .onRender(() => {
           if (slideshowState.value.isChanging) {
@@ -340,13 +342,27 @@ void main() {
     startTransition('prev')
   }
 
-  onMounted(() => {
+  onMounted(async () => {
+    await nextTick()
     setTimeout(() => {
       if (imageUrls.value.length > 0) {
         initSlideshow()
       }
     }, 100)
   })
+
+  // Inside your <script setup>
+  watch(
+    () => currentMetadata.value,
+    (newVal) => {
+      if (newVal && newVal.title) {
+        document.title = `${newVal.title} | CosmoPix`
+      } else {
+        document.title = 'CosmoPix - NASA Daily Photos'
+      }
+    },
+    { immediate: true }
+  )
 
   watch(
     () => imageUrls.value,
@@ -385,7 +401,7 @@ void main() {
     <!-- COSMOPIX Header -->
     <div class="absolute top-0 left-0 z-40 p-6 sm:p-8">
       <h1
-        class="text-white font-display font-bold tracking-wider text-xl sm:text-2xl md:text-3xl lg:text-4xl"
+        class="text-white font-display font-bold tracking-wider text-xl sm:text-2xl md:text-3xl lg:text-6xl"
       >
         COSMOPIX
       </h1>
@@ -402,8 +418,16 @@ void main() {
           <!-- Displacement texture removed for page curl effect -->
 
           <!-- Only 2 image slots for active and next textures -->
-          <img crossorigin="anonymous" />
-          <img crossorigin="anonymous" />
+          <img
+            crossorigin="anonymous"
+            data-curtains-texture-helper
+            src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+          />
+          <img
+            crossorigin="anonymous"
+            data-curtains-texture-helper
+            src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+          />
         </div>
 
         <!-- Navigation Buttons -->
@@ -453,46 +477,46 @@ void main() {
           </button>
         </div>
       </div>
-    </div>
 
-    <!-- Slide Counter and Metadata (outside centered container) -->
-    <div class="fixed inset-0 pointer-events-none z-30">
-      <!-- Slide Counter -->
-      <div
-        class="absolute bottom-8 right-8 text-white bg-black/30 backdrop-blur-sm px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm"
-      >
-        {{ currentSlideIndex + 1 }} / {{ imageUrls.length }}
-      </div>
+      <!-- Slide Counter and Metadata (outside centered container) -->
+      <div class="fixed inset-0 pointer-events-none z-30">
+        <!-- Slide Counter -->
+        <div
+          class="absolute bottom-8 right-8 text-white bg-black/30 backdrop-blur-sm px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm"
+        >
+          {{ currentSlideIndex + 1 }} / {{ imageUrls.length }}
+        </div>
 
-      <!-- Metadata Display -->
-      <div
-        v-if="currentMetadata"
-        class="absolute bottom-8 left-8 max-w-xs text-white bg-black/30 backdrop-blur-sm p-3 sm:p-4 rounded-lg sm:max-w-sm md:max-w-md font-sans"
-      >
-        <h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2 truncate">
-          {{ currentMetadata.title }}
-        </h3>
-        <div class="text-xs sm:text-sm space-y-1">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-            <span class="text-gray-300">Date:</span>
-            <span>{{ formatDate(currentMetadata.date) }}</span>
-          </div>
-          <div
-            v-if="currentMetadata.copyright"
-            class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
-          >
-            <span class="text-gray-300">Copyright:</span>
-            <span class="truncate">{{ currentMetadata.copyright }}</span>
-          </div>
-          <div class="mt-2">
-            <p class="text-gray-300 text-xs mb-1">Explanation:</p>
-            <p class="text-xs sm:text-sm line-clamp-2 md:line-clamp-3">
-              {{ currentMetadata.explanation }}
-            </p>
-          </div>
-          <div class="mt-1 sm:mt-2 text-xs text-gray-400">
-            Media type: {{ currentMetadata.media_type }} • Service version:
-            {{ currentMetadata.service_version }}
+        <!-- Metadata Display -->
+        <div
+          v-if="currentMetadata"
+          class="absolute bottom-8 left-8 max-w-xs text-white bg-black/30 backdrop-blur-sm p-3 sm:p-4 rounded-lg sm:max-w-sm md:max-w-md font-sans"
+        >
+          <h3 class="font-bold text-base sm:text-lg mb-1 sm:mb-2 truncate">
+            {{ currentMetadata.title }}
+          </h3>
+          <div class="text-xs sm:text-sm space-y-1">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <span class="text-gray-300">Date:</span>
+              <span>{{ formatDate(currentMetadata.date) }}</span>
+            </div>
+            <div
+              v-if="currentMetadata.copyright"
+              class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
+            >
+              <span class="text-gray-300">Copyright:</span>
+              <span class="truncate">{{ currentMetadata.copyright }}</span>
+            </div>
+            <div class="mt-2">
+              <p class="text-gray-300 text-xs mb-1">Explanation:</p>
+              <p class="text-xs sm:text-sm line-clamp-2 md:line-clamp-3">
+                {{ currentMetadata.explanation }}
+              </p>
+            </div>
+            <div class="mt-1 sm:mt-2 text-xs text-gray-400">
+              Media type: {{ currentMetadata.media_type }} • Service version:
+              {{ currentMetadata.service_version }}
+            </div>
           </div>
         </div>
       </div>
