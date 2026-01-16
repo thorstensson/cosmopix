@@ -210,10 +210,20 @@ void main() {
             const activeImg = new Image()
             activeImg.crossOrigin = 'anonymous'
             activeImg.src = imageUrls.value[0]
+
             activeImg.onload = () => {
-              activeTex.setSource(activeImg)
-              console.log('Initial active image loaded')
-              emit('ready')
+              // Force the browser to decode the pixels before passing to Curtains
+              activeImg
+                .decode()
+                .then(() => {
+                  activeTex.setSource(activeImg)
+                  emit('ready')
+                })
+                .catch(() => {
+                  // Fallback if decode fails
+                  activeTex.setSource(activeImg)
+                  emit('ready')
+                })
             }
           }
 
