@@ -117,7 +117,7 @@
       </div>
 
       <!-- Progress indicator -->
-      <div class="mt-6 text-center">
+      <div class="mt-4 text-center">
         <div class="text-2xl font-sans text-white tracking-wider">
           {{ Math.round(progress * 100) }}<span class="text-gray-400">%</span>
         </div>
@@ -125,14 +125,11 @@
     </div>
 
     <!-- Status messages -->
-    <div class="mt-8 text-center space-y-2">
+    <div class="mt-4 text-center">
       <div class="text-gray-300 text-sm font-sans tracking-wider">
         <span class="text-white">ACCESSING</span> NASA APOD DATABASE
       </div>
-      <div class="text-gray-400 text-xs font-mono">
-        <span class="text-white">IMAGES QUEUED</span>
-      </div>
-      <div class="text-gray-500 text-xs font-mono mt-4">
+      <div class="text-gray-500 text-xs font-mono mt-1">
         <span class="blink">▌</span> READY FOR COSMIC DISPLAY <span class="blink">▌</span>
       </div>
     </div>

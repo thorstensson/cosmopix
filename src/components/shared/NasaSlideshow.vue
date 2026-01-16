@@ -563,7 +563,6 @@
               >
             </div>
             <div class="mt-2 hidden sm:block">
-              <p class="text-gray-300 text-xs sm:text-xs md:text-sm mb-1">Explanation:</p>
               <p class="text-xs sm:text-xs md:text-sm line-clamp-2 md:line-clamp-3">
                 {{ currentMetadata.explanation }}
               </p>
