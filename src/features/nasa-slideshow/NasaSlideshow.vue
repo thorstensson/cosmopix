@@ -1,7 +1,10 @@
 <script setup lang="ts">
   import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
   import { Curtains, Plane, type Texture } from 'curtainsjs'
-  import { type ApodItem } from '@/api/nasaService'
+  import { type ApodItem } from './nasaService'
+  import PreviousButton from './components/PreviousButton.vue'
+  import NextButton from './components/NextButton.vue'
+  import NasaMetadata from './components/NasaMetadata.vue'
   const isInitialized = ref(false)
   const emit = defineEmits<{
     ready: []
@@ -64,20 +67,6 @@
     }
     return null
   })
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'Unknown date'
-    try {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      })
-    } catch {
-      return dateString
-    }
-  }
 
   /**
    * Shaders from Curtains.js example
@@ -210,11 +199,11 @@
           // 2. Map the samplers to these textures
           const activeTex = plane.createTexture({
             sampler: 'activeTex',
-            fromTexture: plane.textures[1]
+            fromTexture: plane.textures[1]!
           })
           const nextTex = plane.createTexture({
             sampler: 'nextTex',
-            fromTexture: plane.textures[2]
+            fromTexture: plane.textures[2]!
           })
 
           activeTexture.value = activeTex
@@ -230,7 +219,7 @@
           if (imageUrls.value.length > 0) {
             const activeImg = new Image()
             activeImg.crossOrigin = 'anonymous'
-            activeImg.src = imageUrls.value[0]
+            activeImg.src = imageUrls.value[0]!
 
             activeImg.onload = () => {
               activeTexture.value?.setSource(activeImg)
@@ -450,20 +439,23 @@
 </script>
 
 <template>
-  <div class="slideshow-container fixed inset-0 w-screen h-screen overflow-hidden bg-black">
+  <div class="slideshow-container fixed inset-0 h-screen w-screen overflow-hidden bg-black">
     <!-- COSMOPIX Header -->
-    <div class="absolute z-40 top-4 left-4 sm:top-8 sm:left-8">
-      <h1 class="text-white font-display font-bold text-[clamp(1.8rem,5vw,3.6rem)]">COSMOPIX</h1>
+    <div class="absolute top-4 left-4 z-40 sm:left-8">
+      <h1 class="font-display text-[clamp(1.8rem,5vw,3rem)] font-bold text-white">APOD</h1>
+      <h4 class="font-sans text-xs text-white lg:text-sm">
+        Nasa Photo of the Day API with Curtains.js.
+      </h4>
     </div>
 
     <!-- Centered container for image area and navigation -->
-    <div class="absolute inset-0 flex items-center justify-center z-10">
-      <div class="relative w-full max-w-200 h-full max-h-200 md:max-h-150 max-sm:max-h-100">
+    <div class="absolute inset-0 z-10 flex items-center justify-center">
+      <div class="relative h-full max-h-200 w-full max-w-200 max-sm:max-h-100 md:max-h-150">
         <!-- WebGL Canvas -->
-        <div id="canvas" class="absolute inset-0 w-full h-full"></div>
+        <div id="canvas" class="absolute inset-0 h-full w-full"></div>
 
         <!-- Texture Definition -->
-        <div class="multi-textures absolute inset-0 w-full h-full pointer-events-none opacity-0">
+        <div class="multi-textures pointer-events-none absolute inset-0 h-full w-full opacity-0">
           <!-- Displacement texture removed for page curl effect -->
 
           <!-- Only 2 image slots for active and next textures -->
@@ -481,98 +473,29 @@
 
         <!-- Navigation Buttons -->
         <div class="slideshow-navigation absolute inset-0">
-          <!-- Previous Button -->
-          <button
-            @click="prevSlide"
-            :disabled="imageUrls.length <= 1 || isChanging"
-            class="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 transition-all duration-300 disabled:opacity-30 disabled:cursor-default"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 max-sm:h-5 max-sm:w-5 text-white"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              fill="none"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-
-          <!-- Next Button -->
-          <button
-            @click="nextSlide"
-            :disabled="imageUrls.length <= 1 || isChanging"
-            class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-auto bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-3 transition-all duration-300 disabled:opacity-30 disabled:cursor-default"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 max-sm:h-5 max-sm:w-5 text-white"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              fill="none"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
+          <PreviousButton
+            @prevSlide="prevSlide"
+            :is-prev-disabled="imageUrls.length <= 1 || isChanging"
+          />
+          <NextButton
+            @nextSlide="nextSlide"
+            :is-next-disabled="imageUrls.length <= 1 || isChanging"
+          />
         </div>
       </div>
 
       <!-- Slide Counter and Metadata (outside centered container) -->
-      <div class="fixed inset-0 pointer-events-none z-30">
+      <div class="pointer-events-none fixed inset-0 z-30">
         <!-- Slide Counter -->
         <div
-          class="absolute bottom-4 sm:bottom-8 right-8 text-white bg-black/30 backdrop-blur-sm px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm"
+          class="absolute right-4 bottom-4 rounded-full bg-black/30 text-xs text-white backdrop-blur-sm sm:right-8 sm:bottom-8 sm:text-sm md:right-8 md:bottom-8"
         >
           {{ currentSlideIndex + 1 }} / {{ imageUrls.length }}
         </div>
-
-        <!-- Metadata Display -->
-        <div
-          v-if="currentMetadata"
-          class="absolute bottom-4 sm:bottom-8 left-8 max-w-64 text-white bg-black/20 backdrop-blur-sm px-3 py-1 sm:px-4 sm:py-2 rounded-lg sm:max-w-sm md:max-w-md font-sans"
-        >
-          <h3 class="font-bold text-base sm:text-md mb-1 sm:mb-2 truncate">
-            {{ currentMetadata.title }}
-          </h3>
-          <div class="text-base md:text-lg space-y-1">
-            <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
-              <span class="text-xs sm:text-xs md:text-sm text-gray-300">Date:</span>
-              <span class="text-xs sm:text-xs md:text-sm">{{
-                formatDate(currentMetadata.date)
-              }}</span>
-              <span v-if="currentMetadata.copyright" class="text-gray-300 ml-2">•</span>
-              <span
-                v-if="currentMetadata.copyright"
-                class="text-gray-300 text-xs sm:text-xs md:text-sm"
-                >Copyright:</span
-              >
-              <span
-                v-if="currentMetadata.copyright"
-                class="text-xs sm:text-xs md:text-sm truncate"
-                >{{ currentMetadata.copyright }}</span
-              >
-            </div>
-            <div class="mt-2 hidden sm:block">
-              <p class="text-xs sm:text-xs md:text-sm line-clamp-2 md:line-clamp-3">
-                {{ currentMetadata.explanation }}
-              </p>
-            </div>
-            <div class="mt-1 sm:mt-2 text-xs md:text-sm text-gray-400">
-              Media type: {{ currentMetadata.media_type }} • Service version:
-              {{ currentMetadata.service_version }}
-            </div>
-          </div>
+        <div>
+          <NasaMetadata v-if="currentMetadata" :current-metadata="currentMetadata" />
         </div>
+        <!-- Metadata Display -->
       </div>
     </div>
   </div>

@@ -1,5 +1,5 @@
 {
-  "name": "moonshot",
+  "name": "nasa-apod",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -47,6 +47,7 @@
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.38.0",
     "prettier": "3.7.4",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "~5.9.3",
     "vite": "beta",
     "vite-plugin-vue-devtools": "^8.0.5",

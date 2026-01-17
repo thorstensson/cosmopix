@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { getApodImage, type ApodItem } from '@/api/nasaService'
+import { getApodImage, type ApodItem } from './nasaService'
 
 export const useNasaStore = defineStore('nasa', () => {
   // --- STATE ---

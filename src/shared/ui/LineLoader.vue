@@ -75,27 +75,22 @@
 </script>
 
 <template>
-  <div class="line-loader-container flex flex-col items-center justify-center min-h-[200px] p-8">
-    <!-- Title -->
-    <div class="text-white text-lg font-sans font-medium mb-8 tracking-wider">
-      COSMOPIX INITIALIZING
-    </div>
-
+  <div class="line-loader-container flex min-h-[200px] flex-col items-center justify-center p-8">
     <!-- Futuristic loading matrix -->
-    <div class="relative w-full max-w-md">
+    <div class="relative max-w-md">
       <!-- Grid container -->
       <div class="grid grid-cols-5 gap-2">
         <div
           v-for="(_, index) in 20"
           :key="`line-${index}`"
-          class="relative h-16 bg-gray-900/80 rounded border border-gray-700/50 overflow-hidden"
+          class="relative aspect-square h-8 overflow-hidden rounded border border-gray-700/50 bg-gray-900/80"
         >
           <!-- Empty line background -->
           <div class="absolute inset-0 bg-gray-900/80"></div>
 
           <!-- Filling effect -->
           <div
-            class="absolute inset-0 bg-linear-to-b from-white via-gray-300 to-white transform transition-all duration-500 ease-out"
+            class="absolute inset-0 transform bg-linear-to-b from-white via-gray-300 to-white transition-all duration-500 ease-out"
             :class="[
               lineStates[index] ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
             ]"
@@ -118,7 +113,7 @@
 
       <!-- Progress indicator -->
       <div class="mt-4 text-center">
-        <div class="text-2xl font-sans text-white tracking-wider">
+        <div class="font-sans text-2xl tracking-wider text-white">
           {{ Math.round(progress * 100) }}<span class="text-gray-400">%</span>
         </div>
       </div>
@@ -126,10 +121,10 @@
 
     <!-- Status messages -->
     <div class="mt-4 text-center">
-      <div class="text-gray-300 text-sm font-sans tracking-wider">
+      <div class="font-sans text-sm tracking-wider text-gray-300">
         <span class="text-white">ACCESSING</span> NASA APOD DATABASE
       </div>
-      <div class="text-gray-500 text-xs font-mono mt-1">
+      <div class="mt-1 font-mono text-xs text-gray-500">
         <span class="blink">▌</span> READY FOR COSMIC DISPLAY <span class="blink">▌</span>
       </div>
     </div>

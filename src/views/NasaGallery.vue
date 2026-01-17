@@ -1,9 +1,9 @@
 <script setup lang="ts">
   import { onMounted, computed, ref } from 'vue'
-  import useNasaAPI from '@/composables/useNasaAPI'
-  import NasaSlideshow from '@/components/shared/NasaSlideshow.vue'
-  import LineLoader from '@/components/shared/LineLoader.vue'
-  import { type ApodItem } from '@/api/nasaService'
+  import useNasaAPI from '@/features/nasa-slideshow/useNasaAPI'
+  import NasaSlideshow from '@/features/nasa-slideshow/NasaSlideshow.vue'
+  import LineLoader from '@/shared/ui/LineLoader.vue'
+  import { type ApodItem } from '@/features/nasa-slideshow/nasaService'
 
   const { loadGallery, gallery, error, isVideo } = useNasaAPI()
   const showLoader = ref(true)
