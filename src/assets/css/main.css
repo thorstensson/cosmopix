@@ -5,7 +5,7 @@
 
 @theme {
   /* Define your custom hex color here */
-  --color-space-black: #050505;
+  --color-space-black: #121212;
   /* Override default sans with Inter */
   --font-sans: 'Inter', ui-sans-serif, system-ui;
 
@@ -16,6 +16,6 @@
 @layer base {
   body {
     /* Now you can use it with @apply just like a default color */
-    @apply bg-space-black text-white min-h-screen;
+    @apply bg-space-black min-h-screen text-white;
   }
 }

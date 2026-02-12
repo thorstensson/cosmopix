@@ -52,11 +52,11 @@
 </script>
 
 <template>
-  <div class="min-h-screen" style="background-color: #050505">
+  <div class="bg-space-black min-h-screen">
     <LineLoader
       v-if="showLoader"
       @complete="handleLoaderComplete"
-      class="fixed inset-0 flex items-center justify-center z-50"
+      class="fixed inset-0 z-50 flex items-center justify-center"
     />
 
     <div
@@ -64,13 +64,13 @@
       class="transition-opacity duration-1000 ease-in-out"
       :class="isSlideshowReady ? 'opacity-100' : 'opacity-0'"
     >
-      <div v-if="error" class="error text-red-400 text-center p-8">Error: {{ error }}</div>
+      <div v-if="error" class="error p-8 text-center text-red-400">Error: {{ error }}</div>
 
       <div v-else-if="filteredItems.length > 0">
         <NasaSlideshow :apod-items="filteredItems" @ready="handleSlideshowReady" />
       </div>
 
-      <div v-else class="text-white text-center p-8">No images available</div>
+      <div v-else class="p-8 text-center text-white">No images available</div>
     </div>
   </div>
 </template>

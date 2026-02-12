@@ -439,10 +439,10 @@
 </script>
 
 <template>
-  <div class="slideshow-container fixed inset-0 h-screen w-screen overflow-hidden bg-black">
+  <div class="slideshow-container fixed inset-0 h-screen w-screen overflow-hidden">
     <!-- COSMOPIX Header -->
     <div class="absolute top-4 left-4 z-40 sm:left-8">
-      <h1 class="font-display text-[clamp(1.8rem,5vw,3rem)] font-bold text-white">APODS</h1>
+      <h1 class="font-display text-[clamp(1.8rem,5vw,2.4rem)] font-bold text-white">APODS</h1>
       <h4 class="font-sans text-xs text-white lg:text-sm">
         NASA Photos of the Day API with Curtains.js
       </h4>
@@ -488,7 +488,7 @@
       <div class="pointer-events-none fixed inset-0 z-30">
         <!-- Slide Counter -->
         <div
-          class="absolute right-4 bottom-4 rounded-full bg-black/30 text-xs text-white backdrop-blur-sm sm:right-8 sm:bottom-8 sm:text-sm md:right-8 md:bottom-8"
+          class="bg-space-black absolute right-4 bottom-4 rounded-full text-xs text-white backdrop-blur-sm sm:right-8 sm:bottom-8 sm:text-sm md:right-8 md:bottom-8"
         >
           {{ currentSlideIndex + 1 }} / {{ imageUrls.length }}
         </div>

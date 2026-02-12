@@ -30,7 +30,7 @@
 <template>
   <div
     v-if="props.currentMetadata"
-    class="absolute bottom-4 left-4 max-w-64 rounded-lg bg-black/20 font-sans text-white backdrop-blur-sm sm:bottom-8 sm:left-8 sm:max-w-sm md:bottom-8 md:max-w-md"
+    class="bg-space-black/20 absolute bottom-4 left-4 max-w-64 rounded-lg font-sans text-white backdrop-blur-sm sm:bottom-8 sm:left-8 sm:max-w-sm md:bottom-8 md:max-w-md"
   >
     <h3 class="mb-1 line-clamp-2 text-sm font-bold">
       {{ props.currentMetadata.title }}
