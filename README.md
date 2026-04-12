@@ -2,8 +2,7 @@
 
 # NASA APODS
 
-A cinematic WebGL slideshow for NASA's Astronomy Picture of the Day (APOD) archive. This took some coffee to get right :coffee: :coffee: :coffee:
-Look to the stars, we all need that more than the mobile :penguin:
+A cinematic WebGL slideshow for NASA's Astronomy Picture of the Day (APOD) archive. :coffee: :coffee: :coffee:
 
 https://nasa-apods.vercel.app/
 
@@ -16,10 +15,11 @@ https://nasa-apods.vercel.app/
 ## Tech Stack
 
 - **Vue 3** with TypeScript
+- **NASA APOD API** for imagery
+- **Pinia** for state management & invocation of Service
+- **Proxy rewrite** for CORS
 - **Curtains.js** for WebGL transitions
 - **Tailwind CSS** for styling
-- **Pinia** for state management
-- **NASA APOD API** for imagery
 
 ## Setup
 
