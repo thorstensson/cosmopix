@@ -41,11 +41,11 @@ https://nasa-apods.vercel.app/
 ## Project Structure
 
 ```
-cosmopix/
+nasa-apod/
 ├── src/
 │   ├── features/              # Feature-based modules
 │   │   └── nasa-slideshow/    # NASA slideshow feature
-│   │       ├── components/    # Feature-specific components
+│   │       ├── components/    # Feature-specific components (PreviousButton, NextButton, NasaMetadata)
 │   │       ├── NasaSlideshow.vue  # Main WebGL slideshow component
 │   │       ├── nasaService.ts     # NASA API service
 │   │       ├── nasaStore.ts       # Pinia store for NASA data
@@ -54,7 +54,8 @@ cosmopix/
 │   │       └── curtainsjs.d.ts    # TypeScript definitions
 │   ├── shared/               # Shared resources
 │   │   ├── ui/              # Reusable UI components
-│   │   │   └── LineLoader.vue  # Futuristic loading animation
+│   │   │   ├── LineLoader.vue     # Futuristic loading animation
+│   │   │   └── GitHubIcon.vue     # Custom GitHub icon component
 │   │   ├── api/             # Shared API utilities
 │   │   └── utils/           # Shared utilities
 │   ├── views/               # Page components
@@ -66,7 +67,11 @@ cosmopix/
 │   ├── App.vue              # Root component
 │   └── main.ts              # Application entry point
 ├── public/                  # Public static assets
-└── package.json             # Dependencies and scripts
+├── vercel.json             # Vercel deployment configuration
+├── package.json            # Dependencies and scripts
+├── tailwind.config.js      # Tailwind CSS configuration
+├── tsconfig.json           # TypeScript configuration
+└── vite.config.ts          # Vite build configuration
 ```
 
 ## Development
