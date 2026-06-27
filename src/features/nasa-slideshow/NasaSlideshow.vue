@@ -4,8 +4,6 @@
   import { type ApodItem } from './nasaService'
   import PreviousButton from './components/PreviousButton.vue'
   import NextButton from './components/NextButton.vue'
-  import GitHubIcon from '@/shared/ui/GitHubIcon.vue'
-
   import NasaMetadata from './components/NasaMetadata.vue'
   const isInitialized = ref(false)
   const emit = defineEmits<{
@@ -440,16 +438,24 @@
   <div class="slideshow-container fixed inset-0 h-screen w-screen overflow-hidden">
     <!-- Header Container -->
     <div
-      class="absolute top-4 right-4 left-4 z-40 flex items-start justify-between sm:right-8 sm:left-8"
+      class="text-gray absolute top-4 right-4 left-4 z-40 flex items-center justify-between sm:right-8 sm:left-8"
     >
       <!-- COSMOPIX Header -->
       <div>
-        <h1 class="font-display text-[clamp(1.8rem,5vw,2.4rem)] font-bold text-white">APODS</h1>
-        <h4 class="font-sans text-xs text-white lg:text-sm">NASA Photos of the Day</h4>
+        <h1 class="font-display text-[clamp(1.4rem,5vw,1.8rem)] font-bold">APODS</h1>
+        <h4 class="font-sans text-xs lg:text-sm">NASA Photos of the Day</h4>
       </div>
 
-      <!-- GitHub Icon -->
-      <GitHubIcon />
+      <div class="text-sm">
+        <span class="mr-1 text-gray-200">by</span
+        ><a
+          href="https://www.thomasthorstensson.com"
+          target="_blank"
+          class="text-gray-400 transition-colors duration-200 hover:text-gray-100"
+          title="Folio"
+          >Thomas</a
+        >
+      </div>
     </div>
 
     <!-- Centered container for image area and navigation -->

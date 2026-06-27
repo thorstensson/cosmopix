@@ -1,10 +1,19 @@
 <script setup lang="ts">
   import NasaGallery from './views/NasaGallery.vue'
+  import { useSeoMeta } from '@unhead/vue'
+
+  useSeoMeta({
+    title: 'NASA APODS | Thomas Thorstensson',
+    description:
+      "A cinematic WebGL slideshow exploring NASA's Astronomy Picture of the Day archive.",
+    ogImage: 'https://nasa-apods.vercel.app/og-image.jpg',
+    ogUrl: 'https://nasa-apods.vercel.app/'
+  })
 </script>
 
 <template>
   <main
-    class="w-screen h-screen flex items-center justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+    class="mx-auto flex h-screen w-screen max-w-7xl items-center justify-center px-4 sm:px-6 lg:px-8"
   >
     <NasaGallery />
   </main>

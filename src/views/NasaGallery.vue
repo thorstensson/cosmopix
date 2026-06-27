@@ -1,9 +1,36 @@
 <script setup lang="ts">
   import { onMounted, computed, ref } from 'vue'
+  import { useHead } from '@unhead/vue'
   import useNasaAPI from '@/features/nasa-slideshow/useNasaAPI'
   import NasaSlideshow from '@/features/nasa-slideshow/NasaSlideshow.vue'
   import LineLoader from '@/shared/ui/LineLoader.vue'
   import { type ApodItem } from '@/features/nasa-slideshow/nasaService'
+
+  const title = 'NASA APODS | Thomas Thorstensson'
+  const description =
+    "A cinematic WebGL slideshow exploring NASA's Astronomy Picture of the Day archive with Curtains.js transitions."
+  const url = 'https://nasa-apods.vercel.app/'
+
+  useHead({
+    title,
+    meta: [
+      { name: 'description', content: description },
+      // Open Graph
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: description },
+      { property: 'og:url', content: url },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:image', content: '/og-image.jpg' },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
+      // Twitter Card
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: title },
+      { name: 'twitter:description', content: description },
+      { name: 'twitter:image', content: '/og-image.jpg' }
+    ],
+    link: [{ rel: 'canonical', href: url }]
+  })
 
   const { loadGallery, gallery, error, isVideo } = useNasaAPI()
   const showLoader = ref(true)

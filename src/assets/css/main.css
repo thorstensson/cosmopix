@@ -1,13 +1,16 @@
-@import '@fontsource/inter'; /* Body */
-@import '@fontsource/orbitron'; /* Header */
+@import '@fontsource/inter';
+/* Body */
+@import '@fontsource/orbitron';
+/* Header */
 
 @import 'tailwindcss';
 
 @theme {
   /* Define your custom hex color here */
-  --color-space-black: #121212;
+  --color-space-black: #0D0E12;
+  --color-space-light: #f5f9ff;
   /* Override default sans with Inter */
-  --font-sans: 'Inter', ui-sans-serif, system-ui;
+  --font-sans: 'Geist', ui-sans-serif, system-ui;
 
   /* Create custom futuristic header utility */
   --font-display: 'Orbitron', sans-serif;
@@ -16,6 +19,6 @@
 @layer base {
   body {
     /* Now you can use it with @apply just like a default color */
-    @apply bg-space-black min-h-screen text-white;
+    @apply bg-space-black min-h-screen text-space-light;
   }
 }
