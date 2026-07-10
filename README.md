@@ -44,12 +44,13 @@ https://nasa-apods.vercel.app/
 ```
 nasa-apod/
 ├── src/
+│   ├── entities/              # Business domain entities
+│   │   └── nasa-apod/         # NASA APOD data model & store
+│   │       └── nasaStore.ts   # Pinia store for NASA data
 │   ├── features/              # Feature-based modules
 │   │   └── nasa-slideshow/    # NASA slideshow feature
 │   │       ├── components/    # Feature-specific components (PreviousButton, NextButton, NasaMetadata)
 │   │       ├── NasaSlideshow.vue  # Main WebGL slideshow component
-│   │       ├── nasaService.ts     # NASA API service
-│   │       ├── nasaStore.ts       # Pinia store for NASA data
 │   │       ├── useNasaAPI.ts      # Vue composable for NASA API
 │   │       ├── utils.ts           # Feature utilities
 │   │       └── curtainsjs.d.ts    # TypeScript definitions
@@ -58,11 +59,11 @@ nasa-apod/
 │   │   │   ├── LineLoader.vue     # Futuristic loading animation
 │   │   │   └── GitHubIcon.vue     # Custom GitHub icon component
 │   │   ├── api/             # Shared API utilities
+│   │   │   └── nasaService.ts     # NASA API service
 │   │   └── utils/           # Shared utilities
-│   ├── views/               # Page components
+│   ├── pages/               # Page components
 │   │   └── NasaGallery.vue  # Gallery view
 │   ├── layouts/             # Layout components
-│   ├── router/              # Vue Router configuration
 │   ├── assets/              # Static assets (CSS, images)
 │   ├── __tests__/           # Test files
 │   ├── App.vue              # Root component
