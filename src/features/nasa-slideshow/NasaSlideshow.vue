@@ -506,7 +506,7 @@
       <div class="pointer-events-none fixed inset-0 z-30">
         <!-- Slide Counter -->
         <div
-          class="bg-space-black absolute right-4 bottom-4 rounded-full text-xs text-white backdrop-blur-sm sm:right-8 sm:bottom-8 sm:text-sm md:right-8 md:bottom-8"
+          class="absolute right-4 bottom-4 rounded-full text-xs text-white mix-blend-difference sm:right-8 sm:bottom-8 sm:text-sm"
         >
           {{ currentSlideIndex + 1 }} / {{ imageUrls.length }}
         </div>

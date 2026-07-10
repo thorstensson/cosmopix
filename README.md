@@ -1,16 +1,17 @@
-![Image](https://github.com/user-attachments/assets/86f75d43-8fe9-42ab-9d35-4f6ff71563d6)
+![Image](https://github.com/user-attachments/assets/96df9b56-8479-46f1-8267-7b276240ed68)
 
 # NASA APODS
 
-A cinematic WebGL slideshow for NASA's Astronomy Picture of the Day (APOD) archive. :coffee: :coffee: :coffee:
+A cinematic WebGL slideshow for NASA's Astronomy Picture of the Day (APOD) archive.
 
 https://nasa-apods.vercel.app/
 
 ## Features
 
+- **FSD**: Feature Sliced Design...why will be evident in due time...
 - **WebGL Slideshow**: Smooth transitions using Curtains.js
 - **NASA APOD Integration**: Fetches images from the NASA Astronomy Picture of the Day (APOD) archive.
-- **Sci-Fi**: Matrix-style loader with Orbitron typography
+- **Sci-Fi**: Matrix-style loader with Nazalisation typography
 
 ## Tech Stack
 
