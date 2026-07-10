@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
   import { Curtains, Plane, type Texture } from 'curtainsjs'
-  import { type ApodItem } from './nasaService'
+  import { type ApodItem } from '../../shared/api/nasaService'
   import PreviousButton from './components/PreviousButton.vue'
   import NextButton from './components/NextButton.vue'
   import NasaMetadata from './components/NasaMetadata.vue'

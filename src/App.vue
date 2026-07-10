@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import NasaGallery from './views/NasaGallery.vue'
+  import NasaGallery from './pages/NasaGallery.vue'
   import { useSeoMeta } from '@unhead/vue'
 
   useSeoMeta({

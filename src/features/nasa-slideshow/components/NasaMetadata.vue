@@ -1,6 +1,7 @@
 <script setup lang="ts">
   /**
    * Handles metadata display and uses utils for formatting thereof.
+   * This is not textbook. I could use 3.5 syntax but want to avoid typing out each prop when passing.
    */
   import { formatDate } from '../utils'
   interface Props {

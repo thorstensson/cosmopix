@@ -1,6 +1,6 @@
 import { computed } from 'vue'
-import { useNasaStore } from './nasaStore'
-import { type ApodItem } from './nasaService'
+import { useNasaStore } from '../../entities/nasa-apod/nasaStore'
+import { type ApodItem } from '../../shared/api/nasaService'
 
 export default function useNasaAPI() {
   const nasaStore = useNasaStore()

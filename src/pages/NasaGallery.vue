@@ -4,7 +4,7 @@
   import useNasaAPI from '@/features/nasa-slideshow/useNasaAPI'
   import NasaSlideshow from '@/features/nasa-slideshow/NasaSlideshow.vue'
   import LineLoader from '@/shared/ui/LineLoader.vue'
-  import { type ApodItem } from '@/features/nasa-slideshow/nasaService'
+  import { type ApodItem } from '@/shared/api/nasaService'
 
   const title = 'NASA APODS | Thomas Thorstensson'
   const description =
