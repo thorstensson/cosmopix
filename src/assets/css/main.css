@@ -1,7 +1,14 @@
-@import '@fontsource/inter';
+@import '@fontsource-variable/geist/wght.css';
 /* Body */
-@import '@fontsource/orbitron';
-/* Header */
+
+/* Local Nasalization Font Configuration */
+@font-face {
+  font-family: 'Nasalization';
+  src: url('/fonts/NasalizationExtended.woff2') format('woff2');
+  font-display: swap;
+  font-weight: 400;
+  font-style: normal;
+}
 
 @import 'tailwindcss';
 
@@ -13,7 +20,7 @@
   --font-sans: 'Geist', ui-sans-serif, system-ui;
 
   /* Create custom futuristic header utility */
-  --font-display: 'Orbitron', sans-serif;
+  --font-display: 'Nasalization', sans-serif;
 }
 
 @layer base {
