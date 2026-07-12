@@ -403,7 +403,6 @@
     })
   })
 
-  // Inside your <script setup>
   watch(
     () => currentMetadata.value,
     (newVal) => {
@@ -430,8 +429,6 @@
     },
     { immediate: true }
   )
-
-  // onUnmounted is now inside onMounted for proper cleanup order
 </script>
 
 <template>

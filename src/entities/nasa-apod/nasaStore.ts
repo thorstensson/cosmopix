@@ -85,11 +85,10 @@ export const useNasaStore = defineStore('nasa', () => {
         { date: '2024-03-19', title: 'Milky Way Core', id: 'PIA12348' }
       ]
 
-      apods.value = fallbacks.map((f) => ({
-        date: f.date,
-        title: f.title,
+      apods.value = fallbacks.map(({ id, ...rest }) => ({
+        ...rest,
         explanation: 'Archived NASA asset.',
-        url: `${assetBase}/${f.id}/${f.id}~medium.jpg`,
+        url: `${assetBase}/${id}/${id}~medium.jpg`,
         media_type: 'image',
         service_version: 'v1'
       }))
