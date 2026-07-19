@@ -432,7 +432,7 @@
 </script>
 
 <template>
-  <div class="slideshow-container fixed inset-0 h-screen w-screen overflow-hidden">
+  <div class="slideshow-container fixed inset-0 h-dvh w-screen overflow-hidden">
     <!-- Header Container -->
     <div
       class="text-gray absolute top-4 right-4 left-4 z-40 flex items-center justify-between sm:right-8 sm:left-8"
