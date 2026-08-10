@@ -5,6 +5,7 @@
   import PreviousButton from './components/PreviousButton.vue'
   import NextButton from './components/NextButton.vue'
   import NasaMetadata from './components/NasaMetadata.vue'
+  import StarField from './components/StarField.vue'
   const isInitialized = ref(false)
   const emit = defineEmits<{
     ready: []
@@ -27,13 +28,23 @@
   const activeTexture = ref<Plane['textures'][0] | null>(null)
   const nextTexture = ref<Plane['textures'][0] | null>(null)
 
+  // Wall-clock length of a transition. The shader timer is a plain 0->90 ramp
+  // across this window; the easing lives in the shader's cosine blend, so the
+  // effect looks identical at 60Hz and 120Hz.
+  const TRANSITION_DURATION_MS = 1500
+
   const slideshowState = ref({
     activeTextureIndex: 1,
     nextTextureIndex: 2,
     maxTextures: 0,
     isChanging: false,
-    transitionTimer: 0
+    transitionTimer: 0,
+    transitionStartTime: 0,
+    settleFrames: 0
   })
+
+  // Image + index handed to activeTex once the transition completes
+  const pendingSlide = ref<{ img: HTMLImageElement; index: number } | null>(null)
 
   // Image preloading cache
   const imageCache = ref<Map<string, HTMLImageElement>>(new Map())
@@ -126,8 +137,11 @@
      vec2 secondDisplacementCoords = vNextTextureCoord - displacementTexture.r * ((cos(uTransitionTimer / (90.0 / 3.141592)) + 1.0) / 1.25);
      vec4 secondDistortedColor = texture2D(nextTex, vec2(vNextTextureCoord.x, secondDisplacementCoords.y));
 
-     // Linear transition from 0.0 to 1.0 as uTransitionTimer goes from 0 to 90
-     float transition = clamp(uTransitionTimer / 90.0, 0.0, 1.0);
+     // Phase-locked to the two displacement envelopes above: each image is
+     // exactly as faded as it is warped, so both morph in view. A linear ramp
+     // here fades the outgoing image out faster than it distorts, which hides
+     // its half of the effect entirely.
+     float transition = 1.0 - ((cos(uTransitionTimer / (90.0 / 3.141592)) + 1.0) / 2.0);
      vec4 finalColor = mix(firstDistortedColor, secondDistortedColor, transition);
 
      finalColor = vec4(finalColor.rgb * finalColor.a, finalColor.a);
@@ -197,18 +211,22 @@
           slideshowState.value.activeTextureIndex = 1
           slideshowState.value.nextTextureIndex = 2
 
-          // 2. Map the samplers to these textures
-          const activeTex = plane.createTexture({
-            sampler: 'activeTex',
-            fromTexture: plane.textures[1]!
-          })
-          const nextTex = plane.createTexture({
-            sampler: 'nextTex',
-            fromTexture: plane.textures[2]!
-          })
+          // 2. Use the plane's own textures directly.
+          //    createTexture({ fromTexture }) returns a *copy*, and
+          //    Texture.copy() assigns `_sampler.texture` by reference — the two
+          //    samplers would then share one GL texture object, so uploading to
+          //    nextTex would clobber activeTex mid-transition.
+          activeTexture.value = plane.textures[1]!
+          nextTexture.value = plane.textures[2]!
 
-          activeTexture.value = activeTex
-          nextTexture.value = nextTex
+          //    Same trap on every later setSource(): both textures sit in the
+          //    renderer cache, so once nextTex holds image N, handing N to
+          //    activeTex finds nextTex by matching src and copies it — sharing
+          //    the GL texture again. Opt both out of the cache entirely; they
+          //    are only ever written to by hand. `_useCache` has no public
+          //    option, hence Object.assign.
+          Object.assign(activeTexture.value, { _useCache: false })
+          Object.assign(nextTexture.value, { _useCache: false })
 
           // 3. FORCE the timer to 0 and re-enable drawing immediately
           if (plane.uniforms.transitionTimer) {
@@ -233,21 +251,41 @@
           }
         })
         .onRender(() => {
-          if (slideshowState.value.isChanging) {
-            slideshowState.value.transitionTimer +=
-              (90 - slideshowState.value.transitionTimer) * 0.04
+          const plane = multiTexturesPlane.value
+          if (!plane) return
 
-            if (
-              slideshowState.value.transitionTimer >= 88.5 &&
-              slideshowState.value.transitionTimer !== 90
-            ) {
-              slideshowState.value.transitionTimer = 90
+          const state = slideshowState.value
+
+          if (state.isChanging) {
+            const elapsed = performance.now() - state.transitionStartTime
+            state.transitionTimer = Math.min(elapsed / TRANSITION_DURATION_MS, 1) * 90
+
+            if (state.transitionTimer === 90) {
+              // The timer is parked at 90, so the canvas is showing nextTex.
+              // Point activeTex at the same image and let it upload for a
+              // couple of frames before resetting the timer, so the handover
+              // is invisible instead of a hard cut.
+              const pending = pendingSlide.value
+              if (pending) {
+                activeTexture.value?.setSource(pending.img)
+                currentSlideIndex.value = pending.index
+                preloadNextImages(pending.index)
+                pendingSlide.value = null
+              }
+              state.isChanging = false
+              state.settleFrames = 2
+            }
+          } else if (state.settleFrames > 0) {
+            state.settleFrames--
+            if (state.settleFrames === 0) {
+              state.transitionTimer = 0
+              isChanging.value = false
+              curtains.value?.disableDrawing()
             }
           }
 
-          if (multiTexturesPlane.value && multiTexturesPlane.value.uniforms.transitionTimer) {
-            multiTexturesPlane.value.uniforms.transitionTimer.value =
-              slideshowState.value.transitionTimer
+          if (plane.uniforms.transitionTimer) {
+            plane.uniforms.transitionTimer.value = state.transitionTimer
           }
         })
     } catch (err) {
@@ -256,7 +294,7 @@
   }
 
   const startTransition = (direction: 'next' | 'prev') => {
-    if (!curtains.value || !multiTexturesPlane.value || slideshowState.value.isChanging) return
+    if (!curtains.value || !multiTexturesPlane.value || isChanging.value) return
 
     const totalSlides = imageUrls.value.length
     let nextImageIndex: number
@@ -272,6 +310,10 @@
     const nextImageUrl = imageUrls.value[nextImageIndex]
     if (!nextImageUrl) return
 
+    // Lock now, not in continueTransition: an uncached image leaves a load
+    // window during which a second click would start a competing transition.
+    isChanging.value = true
+
     // Check cache first
     let nextImg = imageCache.value.get(nextImageUrl)
 
@@ -279,50 +321,40 @@
       // Not in cache, load it
       nextImg = new Image()
       nextImg.crossOrigin = 'anonymous'
-      nextImg.src = nextImageUrl
 
       nextImg.onload = () => {
         // Cache the loaded image
         imageCache.value.set(nextImageUrl, nextImg!)
         continueTransition()
       }
+      nextImg.onerror = () => {
+        // Release the lock, otherwise navigation stays dead
+        isChanging.value = false
+      }
+
+      nextImg.src = nextImageUrl
     } else {
       // Image is already cached, continue immediately
       continueTransition()
     }
 
     function continueTransition() {
-      // 1. Prepare next texture
-      nextTexture.value!.setSource(nextImg!)
-
-      // 2. Start animation
-      slideshowState.value.isChanging = true
-      isChanging.value = true
-      slideshowState.value.transitionTimer = 0
-      curtains.value?.enableDrawing()
-
-      // 3. Sync cleanup exactly with animation completion
-      setTimeout(() => {
-        if (!curtains.value || !multiTexturesPlane.value) return
-
-        // CRITICAL SWAP ORDER:
-        // First, make the active texture show the NEW image
-        activeTexture.value!.setSource(nextImg!)
-
-        // Second, reset the timer to 0 so it shows that active texture
-        slideshowState.value.transitionTimer = 0
-        if (multiTexturesPlane.value.uniforms.transitionTimer) {
-          multiTexturesPlane.value.uniforms.transitionTimer.value = 0
-        }
-
-        // Finally, stop the state
-        slideshowState.value.isChanging = false
+      if (!curtains.value || !nextTexture.value) {
         isChanging.value = false
-        curtains.value.disableDrawing()
+        return
+      }
 
-        currentSlideIndex.value = nextImageIndex!
-        preloadNextImages(nextImageIndex!)
-      }, 1700)
+      // 1. Prepare next texture and queue the handover done in onRender
+      nextTexture.value.setSource(nextImg!)
+      pendingSlide.value = { img: nextImg!, index: nextImageIndex }
+
+      // 2. Start animation. onRender drives the timer off wall-clock time and
+      //    finishes the swap itself, so there is no duration to keep in sync.
+      slideshowState.value.transitionTimer = 0
+      slideshowState.value.transitionStartTime = performance.now()
+      slideshowState.value.settleFrames = 0
+      slideshowState.value.isChanging = true
+      curtains.value.enableDrawing()
     }
   }
 
@@ -433,6 +465,9 @@
 
 <template>
   <div class="slideshow-container fixed inset-0 h-dvh w-screen overflow-hidden">
+    <!-- Starfield Background -->
+    <StarField class="absolute inset-0 z-0" />
+
     <!-- Header Container -->
     <div
       class="text-gray absolute top-4 right-4 left-4 z-40 flex items-center justify-between sm:right-8 sm:left-8"
@@ -465,7 +500,15 @@
         <div class="multi-textures pointer-events-none absolute inset-0 h-full w-full opacity-0">
           <!-- Displacement texture removed for page curl effect -->
 
-          <!-- Only 2 image slots for active and next textures -->
+          <!-- Only 2 image slots for active and next textures.
+
+               The two placeholders MUST have different src values. curtains
+               caches textures by source.src (CacheManager.getTextureFromSource),
+               and a cache hit makes the second texture a copy that shares the
+               first one's GL texture object — so writing the incoming image to
+               nextTex would also overwrite activeTex and the outgoing image
+               would vanish before the transition's first frame. Both are 1x1
+               GIFs; only the bytes differ. -->
           <img
             crossorigin="anonymous"
             data-sampler="displacement"
@@ -482,7 +525,7 @@
             crossorigin="anonymous"
             data-sampler="nextTex"
             data-curtains-texture-helper
-            src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+            src="data:image/gif;base64,R0lGODlhAQABAIABAAAAAP///yH5BAEAAAABACwAAAAAAQABAAACAkQBADs="
           />
         </div>
 
