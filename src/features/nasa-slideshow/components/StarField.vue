@@ -91,7 +91,7 @@
     // A 50-80% dip on a dim star would be invisible; on a bright one it pops.
     const twinkleCount = Math.max(1, Math.round(STAR_COUNT * TWINKLE_RATIO))
     const brightest = Array.from({ length: STAR_COUNT }, (_, i) => i).sort(
-      (a, b) => intensities[b] - intensities[a]
+      (a, b) => intensities[b]! - intensities[a]!
     )
     const twinkleSet = new Set(brightest.slice(0, twinkleCount))
 
